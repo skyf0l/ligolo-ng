@@ -73,8 +73,10 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 		} else if strings.Contains(errStr, "too many colons") {
 			// IPv6 address without brackets (e.g., "::1", "2001:db8::1")
 			trimmed = "[" + trimmed + "]:11601"
+		} else {
+			// For other unexpected errors, return them
+			return nil, err
 		}
-		// For other errors, proceed with the original trimmed value
 	}
 
 	u, err := url.Parse("//" + trimmed)
