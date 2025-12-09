@@ -19,6 +19,7 @@ package utils
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -44,6 +45,26 @@ func (l *LigoloURL) IsValid() bool {
 	return l.IsWebsocket() || l.Scheme == ""
 }
 
+// isLikelyHostname checks if a string looks like a hostname rather than a URL scheme
+func isLikelyHostname(s string) bool {
+	// Common URL schemes that should not be treated as hostnames
+	knownSchemes := []string{"http", "https", "ws", "wss", "ftp", "ftps", "file", "data", "mailto", "tel"}
+	for _, scheme := range knownSchemes {
+		if s == scheme {
+			return false
+		}
+	}
+	// If it contains a dot, it's likely a hostname (e.g., example.com, 192.168.1.1)
+	// Single-word strings (like "localhost") could be hostnames too
+	return strings.Contains(s, ".") || (s != "" && !strings.ContainsAny(s, "/:@?#[]"))
+}
+
+// isNumericPort checks if a string is a valid port number
+func isNumericPort(s string) bool {
+	port, err := strconv.Atoi(s)
+	return err == nil && port > 0 && port <= 65535
+}
+
 func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 	u, err := url.Parse(rawURL)
 
@@ -58,8 +79,9 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 		return nil, err
 	}
 
-	// If parsed with scheme but no Host and has Opaque, it's likely host:port mistaken as scheme:opaque
-	if u.Scheme != "" && u.Host == "" && u.Opaque != "" {
+	// If parsed with scheme but no Host and has Opaque, it might be host:port mistaken as scheme:opaque
+	// Only reparse if the scheme looks like a hostname and opaque looks like a port
+	if u.Scheme != "" && u.Host == "" && u.Opaque != "" && isLikelyHostname(u.Scheme) && isNumericPort(u.Opaque) {
 		// Try parsing with // prefix
 		u, err = url.Parse("//" + rawURL)
 		if err != nil {
