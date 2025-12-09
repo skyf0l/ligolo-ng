@@ -45,8 +45,20 @@ func (l *LigoloURL) IsValid() bool {
 }
 
 func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
-	u, err := url.Parse(rawURL)
+	// Check if rawURL has no scheme (no "://")
+	hasScheme := strings.Contains(rawURL, "://")
 
+	// If no scheme and no port, append default port :11601
+	if !hasScheme && !strings.Contains(rawURL, ":") {
+		rawURL = rawURL + ":11601"
+	}
+
+	// If no scheme, prepend "//" to help url.Parse correctly identify host:port
+	if !hasScheme {
+		rawURL = "//" + rawURL
+	}
+
+	u, err := url.Parse(rawURL)
 	if err != nil {
 		if urlErr, ok := err.(*url.Error); ok && strings.Contains(urlErr.Err.Error(), "first path segment") {
 			u, err := url.Parse("//" + rawURL)
