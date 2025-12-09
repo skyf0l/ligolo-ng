@@ -58,6 +58,24 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 		return nil, err
 	}
 
+	// If parsed with scheme but no Host and has Opaque, it's likely host:port mistaken as scheme:opaque
+	if u.Scheme != "" && u.Host == "" && u.Opaque != "" {
+		// Try parsing with // prefix
+		u, err = url.Parse("//" + rawURL)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// If no scheme and the Host is empty (bare hostname without port), default to :11601
+	if u.Scheme == "" && u.Host == "" && u.Path != "" && !strings.Contains(u.Path, "/") {
+		// This is a bare hostname, append :11601
+		u, err = url.Parse("//" + rawURL + ":11601")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &LigoloURL{u}, nil
 }
 
