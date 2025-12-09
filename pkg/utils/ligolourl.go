@@ -17,7 +17,6 @@
 package utils
 
 import (
-	"fmt"
 	"net"
 	"net/url"
 	"strings"
@@ -82,38 +81,4 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 	}
 
 	return &LigoloURL{u}, nil
-}
-
-func printURL(title string, u *url.URL) {
-	fmt.Printf("--- %s ---\n", title)
-	if u == nil {
-		fmt.Println("  URL is nil")
-		fmt.Println()
-		return
-	}
-	fmt.Printf("  String() : %s\n", u.String())
-	fmt.Printf("  Scheme   : %q\n", u.Scheme)
-	fmt.Printf("  Host     : %q\n", u.Host)
-	fmt.Printf("  Path     : %q\n", u.Path)
-	fmt.Printf("  Opaque   : %q\n", u.Opaque)
-	fmt.Println()
-}
-
-func main() {
-	urlsToTest := []string{
-		"wss://foo.bar:8080/path/to",
-		"https://foo.bar",
-		"ws://127.0.0.1:11601",
-		"127.0.0.1:11601",
-	}
-
-	for _, raw := range urlsToTest {
-		fmt.Printf("Processing: %q\n", raw)
-		u, err := ParseLigoloURL(raw)
-		if err != nil {
-			fmt.Printf("Error: %v\n\n", err)
-			continue
-		}
-		printURL(raw, u.URL)
-	}
 }
