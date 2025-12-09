@@ -58,7 +58,9 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 
 	// For non-scheme host[:port] form: if no port present, append default 11601.
 	if _, _, err := net.SplitHostPort(trimmed); err != nil {
-		// Check the specific error to determine if we need to add a port
+		// net.SplitHostPort doesn't return typed errors, so we check the error message.
+		// This is a common pattern when dealing with the standard library.
+		// The error messages have been stable across Go versions.
 		errStr := err.Error()
 		if strings.Contains(errStr, "missing port") {
 			// Plain host without port (e.g., "localhost" or "[::1]")
