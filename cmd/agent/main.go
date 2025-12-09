@@ -107,7 +107,7 @@ func main() {
 		var err error
 		if ligoloUrl.IsWebsocket() {
 			//websocket
-			err = wsconnect(&tlsConfig, *serverAddr, *socksProxy, *userAgent)
+			err = wsconnect(&tlsConfig, ligoloUrl.String(), *socksProxy, *userAgent)
 		} else {
 			if *socksProxy != "" {
 				//suppose that scheme is socks:// or socks5://
@@ -121,12 +121,12 @@ func main() {
 				}
 				if proxyUrl.Scheme == "socks" || proxyUrl.Scheme == "socks5" {
 					pass, _ := proxyUrl.User.Password()
-					conn, err = sockDial(*serverAddr, proxyUrl.Host, proxyUrl.User.Username(), pass)
+					conn, err = sockDial(ligoloUrl.Host, proxyUrl.Host, proxyUrl.User.Username(), pass)
 				} else {
 					logrus.Fatal("invalid socks5 address, please use socks://host:port")
 				}
 			} else {
-				conn, err = net.Dial("tcp", *serverAddr)
+				conn, err = net.Dial("tcp", ligoloUrl.Host)
 			}
 			if err == nil {
 				if *acceptFingerprint != "" {

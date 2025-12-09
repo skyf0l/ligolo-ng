@@ -18,6 +18,7 @@ package utils
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 )
@@ -45,16 +46,29 @@ func (l *LigoloURL) IsValid() bool {
 }
 
 func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
-	u, err := url.Parse(rawURL)
+	trimmed := strings.TrimSpace(rawURL)
 
-	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok && strings.Contains(urlErr.Err.Error(), "first path segment") {
-			u, err := url.Parse("//" + rawURL)
-			if err != nil {
-				return nil, err
-			}
-			return &LigoloURL{u}, nil
+	// If it's a full URL (has scheme), parse normally and return.
+	if strings.Contains(trimmed, "://") {
+		u, err := url.Parse(trimmed)
+		if err != nil {
+			return nil, err
 		}
+		return &LigoloURL{u}, nil
+	}
+
+	// For non-scheme host[:port] form: if no port present, append default 11601.
+	if _, _, err := net.SplitHostPort(trimmed); err != nil {
+		if strings.Contains(trimmed, ":") && !strings.HasPrefix(trimmed, "[") {
+			// IPv6 literal without brackets
+			trimmed = "[" + trimmed + "]:11601"
+		} else {
+			trimmed = net.JoinHostPort(trimmed, "11601")
+		}
+	}
+
+	u, err := url.Parse("//" + trimmed)
+	if err != nil {
 		return nil, err
 	}
 
