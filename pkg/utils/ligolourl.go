@@ -59,12 +59,21 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 
 	// For non-scheme host[:port] form: if no port present, append default 11601.
 	if _, _, err := net.SplitHostPort(trimmed); err != nil {
-		if strings.Contains(trimmed, ":") && !strings.HasPrefix(trimmed, "[") {
-			// IPv6 literal without brackets
+		// Check the specific error to determine if we need to add a port
+		errStr := err.Error()
+		if strings.Contains(errStr, "missing port") {
+			// Plain host without port (e.g., "localhost" or "[::1]")
+			// For IPv6 addresses already in brackets, append port directly
+			if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
+				trimmed = trimmed + ":11601"
+			} else {
+				trimmed = net.JoinHostPort(trimmed, "11601")
+			}
+		} else if strings.Contains(errStr, "too many colons") {
+			// IPv6 address without brackets (e.g., "::1", "2001:db8::1")
 			trimmed = "[" + trimmed + "]:11601"
-		} else {
-			trimmed = net.JoinHostPort(trimmed, "11601")
 		}
+		// For other errors, proceed with the original trimmed value
 	}
 
 	u, err := url.Parse("//" + trimmed)

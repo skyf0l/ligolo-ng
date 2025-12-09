@@ -256,7 +256,7 @@ func wsconnect(config *tls.Config, wsaddr string, proxy string, useragent string
 	httpheader := &http.Header{}
 	httpheader.Add("User-Agent", useragent)
 
-	wsConn, _, err := websocket.Dial(ctx, wsaddr, &websocket.DialOptions{HTTPClient: httpClient, HTTPHeader: *httpheader})
+	wsConn, _, err := websocket.Dial(ctx, wsUrl.String(), &websocket.DialOptions{HTTPClient: httpClient, HTTPHeader: *httpheader})
 	if err != nil {
 		return err
 	}
