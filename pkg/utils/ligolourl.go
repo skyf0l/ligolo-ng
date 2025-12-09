@@ -48,11 +48,13 @@ func (l *LigoloURL) IsValid() bool {
 // isLikelyHostname checks if a string looks like a hostname rather than a URL scheme
 func isLikelyHostname(s string) bool {
 	// Common URL schemes that should not be treated as hostnames
-	knownSchemes := []string{"http", "https", "ws", "wss", "ftp", "ftps", "file", "data", "mailto", "tel"}
-	for _, scheme := range knownSchemes {
-		if s == scheme {
-			return false
-		}
+	knownSchemes := map[string]bool{
+		"http": true, "https": true, "ws": true, "wss": true,
+		"ftp": true, "ftps": true, "file": true, "data": true,
+		"mailto": true, "tel": true,
+	}
+	if knownSchemes[s] {
+		return false
 	}
 	// If it contains a dot, it's likely a hostname (e.g., example.com, 192.168.1.1)
 	// Single-word strings (like "localhost") could be hostnames too
