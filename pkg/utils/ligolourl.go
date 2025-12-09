@@ -60,13 +60,6 @@ func ParseLigoloURL(rawURL string) (*LigoloURL, error) {
 
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok && strings.Contains(urlErr.Err.Error(), "first path segment") {
-			u, err := url.Parse("//" + rawURL)
-			if err != nil {
-				return nil, err
-			}
-			return &LigoloURL{u}, nil
-		}
 		return nil, err
 	}
 

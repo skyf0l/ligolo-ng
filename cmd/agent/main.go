@@ -107,7 +107,7 @@ func main() {
 		var err error
 		if ligoloUrl.IsWebsocket() {
 			//websocket
-			err = wsconnect(&tlsConfig, *serverAddr, *socksProxy, *userAgent)
+			err = wsconnect(&tlsConfig, ligoloUrl.String(), *socksProxy, *userAgent)
 		} else {
 			if *socksProxy != "" {
 				//suppose that scheme is socks:// or socks5://
